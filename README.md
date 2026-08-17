@@ -142,4 +142,4 @@ registry.setSendTimeLimit(1_000)
 
 ---
 
-상세 기록 [docs/](docs/) · 코드 [code/](code/) · 재현 코드 [harness/](harness/) · 원본 측정값 [measurements/](measurements/)
+상세 기록 [docs/](docs/) · 코드 [code/](code/) · 검증 코드 [harness/](harness/)
