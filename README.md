@@ -145,7 +145,7 @@ sequenceDiagram
 > ```
 
 - 측정 하니스 코드: [`harness/`](harness/) — 설계 의도와 실행 절차 포함
-- 실제 프로덕션 변경분: [`fix/`](fix/)
+- 실제 서비스 코드와 변경분: [`code/`](code/) — 메시지가 흘러가는 경로 순서로 정리
 - 가공하지 않은 원본 측정 로그: [`measurements/`](measurements/)
 
 ---
@@ -154,8 +154,12 @@ sequenceDiagram
 
 ```
 docs/          두 사례의 상세 기록 (증상 → 증거 → 판단 → 해결 → 한계)
-fix/           실제로 반영한 프로덕션 코드와 설정 변경
-harness/       재현·측정용 테스트 코드 (실행 방법 포함)
+code/          실제 서비스 코드 — websocket / chat / deploy 경로별
+               ├── websocket/  전송 경로와 종료 처리 (수정·신규 파일)
+               ├── chat/       메시지 송수신과 복구 조회 경로
+               ├── deploy/     Dockerfile, 배포 워크플로우, 종료 설정
+               └── diffs/      설정 변경 diff
+harness/       재현·측정용 테스트 코드 (설계 의도 포함)
 measurements/  가공 전 원본 로그와 집계 스크립트
 ```
 

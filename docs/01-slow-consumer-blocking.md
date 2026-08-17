@@ -89,6 +89,8 @@ public void configureWebSocketTransport(WebSocketTransportRegistration registry)
 }
 ```
 
+→ 전체 코드: [`code/websocket/WebSocketConfig.java`](../code/websocket/WebSocketConfig.java) · 브로드캐스트 진입점 [`ChatTopicPublisher.java`](../code/websocket/ChatTopicPublisher.java) · 복구 경로 [`MessageService.java`](../code/chat/MessageService.java)
+
 수정 자체는 두 줄입니다. **진짜 판단은 "끊어도 되는 근거"** 쪽에 있었습니다.
 
 세션을 공격적으로 끊으면 그 순간의 메시지는 유실됩니다. 그런데 이 서비스에는 이미 재접속 시 목록을 다시 받아오는 복구 경로가 있습니다. 즉:

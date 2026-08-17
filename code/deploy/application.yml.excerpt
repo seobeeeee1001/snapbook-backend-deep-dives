@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: snapbook
+  # SIGTERM 수신 시 진행 중 요청을 드레인한 뒤 종료한다. (docker stop의 유예와 짝)
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  flyway:
+    enabled: true
+    locations: classpath:db/baseline
+    baseline-on-migrate: true
+    baseline-version: 0
+    clean-disabled: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+aws:
+  s3:
+    bucket: snapbook-bucket
+    base-url: https://snapbook-bucket.s3.ap-northeast-2.amazonaws.com
+    access-key: ${AWS_ACCESS_KEY}
+    secret-key: ${AWS_SECRET_KEY}
+
+server:
+  forward-headers-strategy: framework
+  shutdown: graceful
+
+logging:
+  pattern:

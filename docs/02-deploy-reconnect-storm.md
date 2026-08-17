@@ -129,6 +129,8 @@ public class WebSocketShutdownDrain implements SmartLifecycle {
 
 "재시작" 신호를 받으면 즉시 재접속하지 않고 0~8초 지터 후 재접속하고, 연속 실패에는 지수 백오프(상한 8초, ±25%)를 적용합니다.
 
+→ 전체 코드: [`WebSocketShutdownDrain.java`](../code/websocket/WebSocketShutdownDrain.java) · [`WebSocketSessionRegistry.java`](../code/websocket/WebSocketSessionRegistry.java) · [`dev-deploy.yml`](../code/deploy/dev-deploy.yml) · [`Dockerfile`](../code/deploy/Dockerfile)
+
 **실행 증거** (서버 로그):
 
 ```
