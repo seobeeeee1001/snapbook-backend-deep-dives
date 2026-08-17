@@ -97,6 +97,41 @@ registry.setSendTimeLimit(1_000)
 - 서버: Spring graceful shutdown 적용 및 `server-restart` 종료 사유 전달
 - 재접속: 즉시 재시도 대신 지터와 지수 백오프로 시간 분산
 
+종료 순서를 명시하기 위해 웹소켓 세션 정리를 별도 단계로 분리했습니다. `SmartLifecycle`의 `stop()`은 phase가 큰 것부터 실행되므로, 웹서버가 HTTP 요청을 드레인하기 전에 세션을 먼저 닫습니다.
+
+```java
+@Component
+public class WebSocketShutdownDrain implements SmartLifecycle {
+
+    static final CloseStatus SERVICE_RESTART = new CloseStatus(1012, "server-restart");
+
+    @Override
+    public void stop() {                       // 1. 세션에 종료 사유 전달
+        sessionRegistry.closeAll(SERVICE_RESTART);
+    }                                          // 2. 이후 graceful shutdown이 HTTP 드레인
+
+    @Override
+    public int getPhase() {
+        return Integer.MAX_VALUE;               // 종료 시 가장 먼저 실행
+    }
+}
+```
+
+전송 계층에서 세션을 추적해야 종료 시점에 한 번에 닫을 수 있으므로, 기존 전송 설정 지점에 데코레이터를 붙였습니다.
+
+```java
+registry.setSendTimeLimit(1_000)
+        .setSendBufferSizeLimit(128 * 1024)
+        .addDecoratorFactory(handler -> new WebSocketHandlerDecorator(handler) {
+            @Override
+            public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+                sessionRegistry.add(session);
+                super.afterConnectionEstablished(session);
+            }
+            ...
+        });
+```
+
 | 지표 | 변경 전 | 변경 후 |
 |---|---:|---:|
 | 실패 재시도 | 122회 | **28회** |
@@ -104,3 +139,7 @@ registry.setSendTimeLimit(1_000)
 | 재조회 응답 p50 | 139ms | **9ms** |
 
 다만 지터·백오프는 재현 클라이언트에서 효과를 검증한 단계이며 실제 프론트엔드 반영은 별도 작업입니다. 단일 컨테이너 교체로 인한 약 4초의 다운타임도 남아 있습니다.
+
+---
+
+상세 기록 [docs/](docs/) · 코드 [code/](code/) · 재현 코드 [harness/](harness/) · 원본 측정값 [measurements/](measurements/)
