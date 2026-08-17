@@ -32,7 +32,7 @@
 ```mermaid
 flowchart LR
     P["publish<br/>(요청·이벤트 스레드)"] --> B["SimpleBroker<br/>구독자 fan-out"]
-    B --> Q["clientOutboundChannel<br/>스레드 코어×2 · 큐 <b>무한</b>"]
+    B --> Q["clientOutboundChannel<br/>스레드 코어×2 · 큐 무한"]
     Q --> D["세션 데코레이터<br/>(기본 10s / 512KB)"]
     D --> W["Tomcat blocking write<br/>(기본 20s 타임아웃)"]
     W --> T["TCP 송신 버퍼 → rwnd"]
