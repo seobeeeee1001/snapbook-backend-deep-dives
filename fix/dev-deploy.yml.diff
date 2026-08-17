@@ -1,0 +1,14 @@
+diff --git a/.github/workflows/dev-deploy.yml b/.github/workflows/dev-deploy.yml
+index b420407..76f481d 100644
+--- a/.github/workflows/dev-deploy.yml
++++ b/.github/workflows/dev-deploy.yml
+@@ -46,5 +46,8 @@ jobs:
+             echo "AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}" >> ~/app/.env
+             docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+             docker pull ${{ secrets.DOCKER_USERNAME }}/spring-dev:latest
+-            docker rm -f dev-app || true
++            # rm -f(SIGKILL)는 진행 중 요청과 웹소켓을 즉사시킨다.
++            # SIGTERM + 30초 유예로 앱의 graceful shutdown(웹소켓 1012 close -> HTTP 드레인)이 실행되게 한다.
++            docker stop --time 30 dev-app || true
++            docker rm dev-app || true
+             docker run -d --name dev-app -p 8080:8080 --restart unless-stopped --env-file ~/app/.env ${{ secrets.DOCKER_USERNAME }}/spring-dev:latest

@@ -1,0 +1,22 @@
+diff --git a/src/main/resources/application.yml b/src/main/resources/application.yml
+index a2c4295..96641d5 100644
+--- a/src/main/resources/application.yml
++++ b/src/main/resources/application.yml
+@@ -1,6 +1,9 @@
+ spring:
+   application:
+     name: snapbook
++  # SIGTERM 수신 시 진행 중 요청을 드레인한 뒤 종료한다. (docker stop의 유예와 짝)
++  lifecycle:
++    timeout-per-shutdown-phase: 20s
+   flyway:
+     enabled: true
+     locations: classpath:db/baseline
+@@ -21,6 +24,7 @@ aws:
+ 
+ server:
+   forward-headers-strategy: framework
++  shutdown: graceful
+ 
+ logging:
+   pattern:
