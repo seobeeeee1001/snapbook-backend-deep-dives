@@ -125,21 +125,26 @@ sequenceDiagram
 
 ---
 
-## 직접 확인해 보실 수 있습니다
+## 어떻게 측정했나
 
 측정은 목업이 아니라 **실제 애플리케이션과 실제 배포 명령**으로 했습니다.
 
-```bash
-# 01: 느린 구독자가 다른 방을 지연시키는지 (실제 Spring 앱을 띄워 측정)
-./gradlew wsDemoTest
+| 사례 | 측정 방식 |
+|---|---|
+| 01 | `@SpringBootTest`로 실제 WebSocket 설정·인증·브로커가 살아있는 서버를 띄우고, 정상 클라이언트 1명의 수신 지연을 재면서 다른 방에 느린 클라이언트 24명을 붙였습니다 |
+| 02 | 실제 이미지를 도커로 띄우고 **배포 스크립트와 동일한 명령**(`docker rm -f` / `docker stop --time 30`)으로 죽이면서, 클라이언트 30명의 절단·재시도·재접속을 기록했습니다 |
 
-# 02: 배포 절단과 재접속 폭풍 (도커 컨테이너를 실제로 죽이며 측정)
-DEMO_MODE=naive  ./gradlew deployStormTest   # 개선 전 정책
-DEMO_MODE=jitter ./gradlew deployStormTest   # 개선 후 정책
-```
+두 하니스 모두 JUnit 태그로 기본 테스트 스위트에서 **분리**되어 있어(`./gradlew wsDemoTest`, `./gradlew deployStormTest`) 측정 코드가 CI를 느리게 만들지 않습니다.
 
-- 두 하니스 모두 기본 테스트 스위트에서 **태그로 분리**되어 있어 CI를 느리게 만들지 않습니다.
-- 측정 하니스 코드: [`harness/`](harness/)
+> **이 저장소는 기록용입니다.** 하니스와 수정 코드는 서비스 저장소에서 발췌한 것이라 여기서 바로 빌드되지는 않습니다.
+> 대신 **가공하지 않은 원본 로그와 집계 스크립트**를 넣어, 문서의 수치를 직접 검산하실 수 있게 했습니다.
+>
+> ```bash
+> cd measurements && python3 aggregate.py before   # 개선 전 지표 재계산
+> cd measurements && python3 aggregate.py after    # 개선 후 지표 재계산
+> ```
+
+- 측정 하니스 코드: [`harness/`](harness/) — 설계 의도와 실행 절차 포함
 - 실제 프로덕션 변경분: [`fix/`](fix/)
 - 가공하지 않은 원본 측정 로그: [`measurements/`](measurements/)
 
