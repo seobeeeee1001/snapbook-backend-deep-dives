@@ -1,1 +1,0 @@
-2026-08-17 22:34:32.112 INFO  [] com.example.easybooking.chat.config.WebSocketShutdownDrain - 계획된 종료: 웹소켓 세션 31개 중 31개에 1012(SERVICE_RESTART) 전송

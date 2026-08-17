@@ -136,32 +136,34 @@ sequenceDiagram
 
 두 하니스 모두 JUnit 태그로 기본 테스트 스위트에서 **분리**되어 있어(`./gradlew wsDemoTest`, `./gradlew deployStormTest`) 측정 코드가 CI를 느리게 만들지 않습니다.
 
-> **이 저장소는 기록용입니다.** 하니스와 수정 코드는 서비스 저장소에서 발췌한 것이라 여기서 바로 빌드되지는 않습니다.
-> 대신 **가공하지 않은 원본 로그와 집계 스크립트**를 넣어, 문서의 수치를 직접 검산하실 수 있게 했습니다.
->
-> ```bash
-> cd measurements && python3 aggregate.py before   # 개선 전 지표 재계산
-> cd measurements && python3 aggregate.py after    # 개선 후 지표 재계산
-> ```
+문서의 수치는 원본 로그에서 직접 재계산하실 수 있습니다.
 
-- 측정 하니스 코드: [`harness/`](harness/) — 설계 의도와 실행 절차 포함
-- 실제 서비스 코드와 변경분: [`code/`](code/) — 메시지가 흘러가는 경로 순서로 정리
-- 가공하지 않은 원본 측정 로그: [`measurements/`](measurements/)
+```bash
+cd measurements && python3 aggregate.py before   # 개선 전
+cd measurements && python3 aggregate.py after    # 개선 후
+```
 
 ---
 
 ## 저장소 구조
 
 ```
-docs/          두 사례의 상세 기록 (증상 → 증거 → 판단 → 해결 → 한계)
-code/          실제 서비스 코드 — websocket / chat / deploy 경로별
-               ├── websocket/  전송 경로와 종료 처리 (수정·신규 파일)
-               ├── chat/       메시지 송수신과 복구 조회 경로
-               ├── deploy/     Dockerfile, 배포 워크플로우, 종료 설정
-               └── diffs/      설정 변경 diff
-harness/       재현·측정용 테스트 코드 (설계 의도 포함)
-measurements/  가공 전 원본 로그와 집계 스크립트
+docs/          사례 상세 기록
+code/
+  websocket/   WebSocketConfig ★         전송 점유 한도(01) + 세션 추적(02)
+               WebSocketShutdownDrain ★  종료 시 1012 close 전송(02)
+               WebSocketSessionRegistry ★
+               ChatTopicPublisher        브로드캐스트 진입점 — 공유 스레드풀로 들어가는 지점
+               JwtChannelInterceptor     STOMP CONNECT 인증
+  chat/        메시지 송수신 + 재접속 복구 조회 경로
+               (01의 "끊어도 안전하다"는 판단의 근거가 되는 코드)
+  deploy/      Dockerfile                exec form — 시그널이 JVM에 닿는 구조
+               dev-deploy.yml ★          SIGKILL → SIGTERM + 유예
+harness/       측정 코드 — 서비스 저장소에서 발췌(여기서는 빌드되지 않음)
+measurements/  원본 로그 + 집계 스크립트
 ```
+
+`★` = 이번에 새로 만들거나 수정한 파일
 
 ## 이 기록에서 보여드리고 싶은 것
 
