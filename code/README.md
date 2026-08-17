@@ -29,6 +29,19 @@ flowchart LR
 
 읽는 순서: `ChatTopicPublisher` → `WebSocketConfig` → `WebSocketShutdownDrain`
 
+### 종료 순서가 왜 중요한가
+
+```
+SIGTERM 수신
+ └─ 1. 웹소켓 세션에 1012 전송      ← WebSocketShutdownDrain (phase MAX_VALUE)
+    2. 진행 중 HTTP 요청 드레인      ← server.shutdown=graceful
+    3. 컨테이너 종료
+```
+
+`SmartLifecycle.stop()`은 phase가 큰 것부터 실행됩니다. 웹서버 graceful 단계보다 **먼저** 세션을 닫아야 클라이언트가 "재시작"을 알고 질서 있게 재접속할 수 있습니다.
+
+세 층 중 하나만 고치면 무효라는 점이 핵심입니다 — **배포 스크립트가 SIGKILL을 보내면 위 코드는 실행 기회조차 없습니다.**
+
 ## `chat/` — 메시지 송수신과 복구 경로
 
 01번의 핵심 판단이 "**느린 세션은 끊어도 된다 — 재접속하면 복구되니까**"였습니다. 그 주장의 근거가 되는 코드입니다.
